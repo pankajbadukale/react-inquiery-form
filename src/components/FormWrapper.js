@@ -1,14 +1,12 @@
-// vendor
 import React from "react";
 import { connect } from 'react-redux';
 
 import { add } from '../app.actions';
-// component
-import FormField from "./FormField";
-// styles
+import { FormInput, FormTextarea, FormSelect, FormRadio, FormButton } from './FormInput';
 import "./FormWrapper.css";
+import * as validator from './validate';
 
-class FormWrapper extends React.Component {
+export class FormWrapper extends React.Component {
   constructor(props) {
     super(props);
     this.initialState = {
@@ -31,9 +29,7 @@ class FormWrapper extends React.Component {
   onFieldValueChange(e) {
     let value = e.currentTarget.value;
     let nameOfControl = e.currentTarget.name;
-    
     this.setState({[nameOfControl]: value});
-    setTimeout(() => console.log(this.state));
   }
 
   notValid(stateValueKey) {
@@ -46,18 +42,25 @@ class FormWrapper extends React.Component {
       this.props.add(this.state);
       setTimeout(() => this.props.history.push("/thanks"))
     }
-    
   }
 
   showOrHideErrorMessage(forceTohideAll) {
     let isValidState = true;
     Object.keys(this.initialState).forEach(ele => {
       let showOrhide = 'none';
-      if(this.notValid(ele)) {
-        showOrhide = 'block';
-        isValidState = false;
+      let formElement = this.myEqForm.querySelector("[name='"+ele+"']");
+      if(forceTohideAll === undefined) {
+        
+        let validateWith = formElement.getAttribute('validate').trim();
+        if(formElement.getAttribute('type') === 'radio') {
+          validateWith = 'isRequired';
+        }
+
+        if(! validator[validateWith](this.state[ele])) {
+          showOrhide = 'block';
+          isValidState = false;
+        }
       }
-      if(forceTohideAll) showOrhide = 'none';
       this.myEqForm.querySelector("[name='"+ele+"']").nextElementSibling.style.display = showOrhide;
     })
 
@@ -78,65 +81,62 @@ class FormWrapper extends React.Component {
           </div>
           <div className="col-md-9">
             <div className="contact-form">
-              <div className="form-group">
-                <label className="control-label col-sm-10" htmlFor="fname">Full Name:</label>
-                <div className="col-sm-10">
-                  <input type="text" value={this.state.fname} onChange={(e) => this.onFieldValueChange(e)} className="form-control" id="fname" placeholder="Enter Full Name" name="fname" />
-                  <label className="alert alert-danger" role="alert">Full Name is required.</label>
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="control-label col-sm-10" htmlFor="email">Email:</label>
-                <div className="col-sm-10">
-                  <input type="email" value={this.state.email}  onChange={(e) => this.onFieldValueChange(e)} className="form-control" id="email" placeholder="Enter email" name="email" />
-                  <label className="alert alert-danger" role="alert">Email address is required.</label>
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="control-label col-sm-10" htmlFor="phone">Phone No:</label>
-                <div className="col-sm-10">
-                  <input type="text" value={this.state.phone} onChange={(e) => this.onFieldValueChange(e)} className="form-control" id="phone" placeholder="Enter Phone No" name="phone" />
-                  <label className="alert alert-danger" role="alert">Valid Phone number is required.</label>
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="control-label col-sm-10" htmlFor="comment">Message:</label>
-                <div className="col-sm-10">
-                  <textarea onChange={(e) => this.onFieldValueChange(e)} className="form-control" name="message" value={this.state.message} rows="5" id="comment"></textarea>
-                  <label className="alert alert-danger" role="alert">Your message for Enquiry  is required.</label>
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="control-label col-sm-10" htmlFor="country">Country:</label>
-                <div className="col-sm-10">
-                  <select name="country" onChange={(e) => this.onFieldValueChange(e)}>
-                    <option value=""></option>
-                    <option value="india">India</option>
-                    <option value="usa">USA</option>
-                    <option value="uk">UK</option>
-                    <option value="china">China</option>
-                  </select>
-                  <label className="alert alert-danger" role="alert">Let us know from which country you are.</label>
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="control-label col-sm-10" htmlFor="gender">Gender :</label>
-                <div className="col-sm-10" name="gender">
-                  <div className="col-sm-6">
-                    <input type="radio" value="Male" onChange={(e) => this.onFieldValueChange(e)} id="gender1" name="gender" />
-                    <label className="control-label" htmlFor="gender1">Male:</label>
-                  </div>
-                  <div className="col-sm-6">
-                    <input type="radio" value="Female" onChange={(e) => this.onFieldValueChange(e)} id="gender2" name="gender" />
-                    <label className="control-label" htmlFor="gender2">Female:</label>
-                  </div>
-                </div>
-                <label className="alert alert-danger" role="alert">Gender selection is mandatory.</label>
-              </div>
+              <FormInput 
+                title="Full Name" 
+                stateValue={this.state.fname} onFieldValueChange={(e) => this.onFieldValueChange(e)} 
+                placeholder="Enter Full Name" 
+                validationType="alphabetsOnly"
+                name="fname" 
+                validationMsg="Full Name is required and should be alphabetic only" />
+
+              <FormInput 
+                title="Email" 
+                stateValue={this.state.email} 
+                onFieldValueChange={(e) => this.onFieldValueChange(e)} 
+                placeholder="Enter Email" 
+                validationType="validateEmail"
+                name="email" 
+                validationMsg="Valide Email is required" />
+              
+              <FormInput 
+                title="Phone No" 
+                stateValue={this.state.phone} 
+                onFieldValueChange={(e) => this.onFieldValueChange(e)} 
+                placeholder="Enter Phone Number" 
+                validationType="IsMobileNumber"
+                name="phone" 
+                validationMsg="Phone number is required and  should be 10 numbers" />
+              
+              <FormTextarea 
+                title="Message" 
+                stateValue={this.state.message} 
+                onFieldValueChange={(e) => this.onFieldValueChange(e)} 
+                placeholder="Enter your comment" 
+                validationType="fiftyChars"
+                name="message" 
+                validationMsg="Please provide you message it is required" />
+              
+              <FormSelect 
+                title="Country" 
+                stateValue={this.state.country} 
+                options={['INDIA', 'UK', 'USA', 'CHINA']} 
+                onFieldValueChange={(e) => this.onFieldValueChange(e)} 
+                validationType="isRequired"
+                name="country" 
+                validationMsg="Let us know know about you country name." />
+              
+              <FormRadio 
+                title="Gender" 
+                onFieldValueChange={(e) => this.onFieldValueChange(e)} 
+                radios={[{value: 'Male', name: 'gender'}, {value: 'Female', name: 'gender'}]} 
+                validationType="isRequired"
+                name="gender" 
+                validationMsg="Please select gender" />
+              
               <div className="form-group">
                 <div className="col-sm-offset-2 col-sm-10 text-right">
-                <button onClick={() => this.resetForm()} type="button" className="btn btn-primary">Clear</button>
-                  <button type="submit" className="btn btn-default">Submit</button>
+                <FormButton onClickHandler={() => this.resetForm()} type="button" title="Clear" />
+                <FormButton type="submit" title="Submit" />
                 </div>
               </div>
             </div>

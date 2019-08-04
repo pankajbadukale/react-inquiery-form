@@ -1,10 +1,7 @@
-// vendor
 import React from "react";
 import { Link } from 'react-router-dom'
 
-
-class FormSubmitted extends React.Component {
-  render() {
+const FormSubmitted = (props) => {
     return (
       <div className="jumbotron text-xs-center">
         <h1 className="display-3">Thank You!</h1>
@@ -16,7 +13,6 @@ class FormSubmitted extends React.Component {
         </p>
       </div>
     );
-  }
 }
 
 export default FormSubmitted;

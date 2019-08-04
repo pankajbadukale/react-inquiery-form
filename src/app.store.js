@@ -7,19 +7,12 @@ const initState = [];
 function Enquiryies(state = initState, action) {
     let myReducers = {
         [ADD]: () => {
-            
-                state.push(action.payload);
-                return [...state];
-            
+            state.push(action.payload);
+            return [...state];
         },
         [LIST]: () => state
     };
-
     return (myReducers[action.type] && myReducers[action.type](action.payload)) || state;
-    
 }
-
-
-const appStore = createStore(combineReducers({Enquiryies}));
-
+const appStore = createStore(combineReducers({ Enquiryies }));
 export default appStore;
